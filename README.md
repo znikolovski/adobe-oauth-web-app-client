@@ -48,6 +48,9 @@ oauth-client/
    - Log in to the Adobe developer console https://developer.adobe.com/console
    - Create a new project
    - Add Lightroom API or any other API that supports OAuth Web App credential to the project
+   - When prompted, use the following redirect URLS
+     - Default redirect URL: https://localhost/callback
+     - Redirect URL pattern: https://localhost/callback
    - Navigate to the OAuth Web App credential overview page
    - Copy the provided Client ID and Client Secret to the .env file
    - Copy the scopes to the .env file too (Note: scopes must be comma separated with no spaces)
