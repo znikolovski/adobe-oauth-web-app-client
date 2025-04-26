@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OAuth 2.0 Demo</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-width: 100%;
+            overflow-x: auto;
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .token-data {
+            max-width: 1200px;
+        }
+        .logged-in-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        #expiresIn {
+            animation: flashRed 1s infinite;
+        }
+        @keyframes flashRed {
+            0% { color: red; font-size: large; }
+            80% { color: black; font-size: medium; }
+            100% { color: red; font-size: large; }
+        }
+    </style>
+    <script src="/js/utils.js"></script>
+    <script>
+        function showLoggedInSection() {
+            document.getElementById('loggedInSection').style.display = 'block';
+            document.getElementById('loggedOutSection').style.display = 'none';
+            document.getElementById('accessToken').textContent = getAccessToken();
+            document.getElementById('userData').textContent = JSON.stringify({sub: getSub()}, null, 2);
+            document.getElementById('expiresIn').textContent = getExpiresIn();
+        }
+
+        function refreshExpiresIn() {
+            document.getElementById('expiresIn').textContent = getExpiresIn();
+        }
+
+        function showLoggedOutSection() {
+            document.getElementById('loggedInSection').style.display = 'none';
+            document.getElementById('loggedOutSection').style.display = 'block';
+        }
+
+        async function refreshTokens() {
+            try {
+                const sub =  getSub();
+
+                const response = await fetch('/api/refresh', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ sub })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to refresh tokens');
+                }
+
+                const data = await response.json();
+                storeTokens(data.access_token, sub, data.expires_in);
+                showLoggedInSection();
+            } catch (error) {
+                console.error('Error refreshing tokens:', error);
+                alert('Failed to refresh tokens. Please try logging in again.');
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const accessToken = getAccessToken();
+            
+            if (accessToken) {
+                showLoggedInSection();
+                setInterval(refreshExpiresIn, 1000);
+            } else {
+                showLoggedOutSection();
+            }
+
+            document.getElementById('refreshButton').addEventListener('click', refreshTokens);
+        });
+    </script>
+</head>
+<body>
+    <h1>OAuth 2.0 Demo</h1>
+    
+    <div id="loggedInSection" style="display: none;">
+        <div class="logged-in-header">
+            <p>You are logged in!</p>
+            <button id="refreshButton">Refresh Tokens</button>
+            <button onclick="clearTokens(); window.location.href='/'">Logout</button>
+        </div>
+        <h2>User Data</h2>
+        <pre id="userData" class="token-data">Loading...</pre>
+        <h2>Access Token</h2>
+        <pre id="accessToken" class="token-data">Loading...</pre>
+        <h2>Expires In</h2>
+        <pre id="expiresIn" class="token-data">Loading...</pre>
+    </div>
+
+    <div id="loggedOutSection" style="display: none;">
+        <p>Please log in to continue</p>
+        <button onclick="window.location.href='/login'">Login</button>
+    </div>
+</body>
+</html> 
