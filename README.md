@@ -1,4 +1,4 @@
-# OAuth Client
+# OAuth Web App Client
 
 A demonstration of OAuth 2.0 Authorization Code Grant Flow with token refresh functionality.
 
