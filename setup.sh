@@ -11,12 +11,15 @@ if [ ! -f "certs/server.key" ] || [ ! -f "certs/server.crt" ]; then
     mkdir -p certs
     
     # Generate self-signed certificate for development
-    openssl req -x509 -newkey rsa:4096 -keyout certs/server.key -out certs/server.crt \
+    openssl req -x509 -newkey rsa:4096 -keyout certs/localhost.key -out certs/localhost.crt \
         -days 365 -nodes -subj "/CN=localhost"
     
     echo "SSL certificates generated successfully!"
 else
     echo "SSL certificates already exist, skipping generation."
 fi
+
+echo "Copying .env.example to .env"
+cp .env.example .env
 
 echo "Setup completed successfully!" 
