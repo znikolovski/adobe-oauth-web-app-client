@@ -38,20 +38,19 @@ oauth-client/
    npm install
    ```
 
-2. Create a `.env` file with the following variables:
-   ```
-   CLIENT_ID=your_client_id
-   CLIENT_SECRET=your_client_secret
-   REDIRECT_URI=http://localhost:3000/callback
-   TOKEN_URL=your_token_endpoint
-   AUTHORIZE_URL=your_authorize_endpoint
-   ```
-
-3. Run the setup script to generate SSL certificates:
+2. Run the setup script to generate SSL certificates and create the .env file:
    ```bash
    chmod +x setup.sh
    ./setup.sh
    ```
+
+3. Add Client ID, Client Secrets, and scopes to the .env file
+   - Log in to the Adobe developer console https://developer.adobe.com/console
+   - Create a new project
+   - Add Lightroom API or any other API that supports OAuth Web App credential to the project
+   - Navigate to the OAuth Web App credential overview page
+   - Copy the provided Client ID and Client Secret to the .env file
+   - Copy the scopes to the .env file too (Note: scopes must be comma separated with no spaces)
 
 4. Start the server:
    ```bash
@@ -88,7 +87,10 @@ CREATE TABLE refresh_tokens (
 
 ## Security Notes
 
-- The /api/refresh and /api/admin/tokens endpoint are not adequately protected
+- The following endpoints are not adequately protected
+  - /api/refresh
+  - /api/admin/tokens
+  - /api/admin/tokens/:sub
 - Refresh tokens are never exposed to the frontend
 - Token refresh requires the user's `sub` identifier
 - Admin dashboard provides token management capabilities 
