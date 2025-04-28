@@ -6,14 +6,41 @@ const path = require('path');
 const fs = require('fs');
 const https = require('https');
 const http = require('http');
+const session = require('express-session');
+const SQLiteStore = require('connect-sqlite3')(session);
 const dbService = require('./db-service');
 require('./refresh-tokens-cron'); // Import the cron job
+require('./session-cleanup-cron'); // Import the session cleanup cron job
 
 const app = express();
+
+// Middleware to redirect HTTP to HTTPS
+app.use((req, res, next) => {
+    if (!req.secure) {
+        return res.redirect(`https://${req.headers.host}${req.url}`);
+    }
+    next();
+});
 
 // Middleware to parse JSON bodies
 app.use(express.json());
 app.use(express.static(path.join(__dirname, './public')));
+
+// Configure session middleware
+app.use(session({
+    store: new SQLiteStore({
+        db: 'oauth.db',
+        table: 'sessions'
+    }),
+    secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex'),
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: true, // Always secure
+        httpOnly: true, // Prevent client-side JavaScript from accessing the cookie
+        maxAge: 30 * 60 * 1000 // 30 minutes
+    }
+}));
 
 // Helper function to render HTML templates
 function renderTemplate(filename, data = {}) {
@@ -27,23 +54,43 @@ function renderTemplate(filename, data = {}) {
 // Start OAuth flow
 app.get('/login', (req, res) => {
     const state = crypto.randomBytes(16).toString('hex');
+    // Store state in session
+    req.session.oauthState = state;
+    
+    console.log('Session ID:', req.sessionID);
+    console.log('Stored state:', req.session.oauthState);
+    
     const authUrl = new URL(process.env.AUTHORIZATION_URL);
     authUrl.searchParams.append('response_type', 'code');
     authUrl.searchParams.append('client_id', process.env.CLIENT_ID);
     authUrl.searchParams.append('redirect_uri', process.env.REDIRECT_URI);
     authUrl.searchParams.append('scope', process.env.SCOPE);
     authUrl.searchParams.append('state', state);
+
     res.redirect(authUrl.toString());
 });
 
 // OAuth callback
 app.get('/callback', async (req, res) => {
-    const { code } = req.query;
+    const { code, state } = req.query;
 
     if (!code) {
         return res.send(renderTemplate('callback-error.html', {
             error: 'No authorization code received'
         }));
+    }
+
+    // Verify state parameter
+    if (!state || !req.session || state !== req.session.oauthState) {
+        req.session.destroy((err) => {
+            if (err) {
+                console.error('Error destroying session:', err);
+            }
+            res.send(renderTemplate('callback-error.html', {
+                error: 'Invalid state parameter'
+            }));
+        });
+        return;
     }
 
     try {
@@ -70,21 +117,33 @@ app.get('/callback', async (req, res) => {
             await dbService.storeRefreshToken(sub, refresh_token);
         }
 
-        // Render callback page with token data
-        res.send(renderTemplate('callback.html', {
-            access_token,
-            sub,
-            expires_in
-        }));
+        // Destroy the session after successful callback
+        req.session.destroy((err) => {
+            if (err) {
+                console.error('Error destroying session:', err);
+            }
+            // Render callback page with token data
+            res.send(renderTemplate('callback.html', {
+                access_token,
+                sub,
+                expires_in
+            }));
+        });
     } catch (error) {
         console.error('Error during token exchange:', error.response?.data || error.message);
         const errorMessage = error.response?.data?.error_description || 
                            error.response?.data?.error || 
                            error.message || 
                            'Error during authentication';
-        res.send(renderTemplate('callback-error.html', {
-            error: errorMessage
-        }));
+        
+        req.session.destroy((err) => {
+            if (err) {
+                console.error('Error destroying session:', err);
+            }
+            res.send(renderTemplate('callback-error.html', {
+                error: errorMessage
+            }));
+        });
     }
 });
 

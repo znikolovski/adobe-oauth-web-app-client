@@ -89,9 +89,9 @@ class DatabaseService {
                         that.db.run(
                             'UPDATE refresh_tokens SET refresh_token = ?, updated_at = CURRENT_TIMESTAMP WHERE sub = ?',
                             [refreshToken, sub],
-                            function(err) {
-                                if (err) reject(err);
-                                else resolve();
+                function(err) {
+                    if (err) reject(err);
+                    else resolve();
                             }
                         );
                     } else {
@@ -139,9 +139,9 @@ class DatabaseService {
             await this.connect();
             return new Promise((resolve, reject) => {
                 this.db.all(`
-                    SELECT sub, refresh_token, created_at, updated_at
-                    FROM refresh_tokens
-                    ORDER BY updated_at DESC
+                SELECT sub, refresh_token, created_at, updated_at
+                FROM refresh_tokens
+                ORDER BY updated_at DESC
                 `, (err, rows) => {
                     if (err) {
                         console.error('Error getting all tokens:', err);
