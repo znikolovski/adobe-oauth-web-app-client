@@ -1,5 +1,6 @@
 const cron = require('node-cron');
-const SQLiteStore = require('connect-sqlite3');
+const session = require('express-session');
+const SQLiteStore = require('connect-sqlite3')(session);
 const path = require('path');
 
 // Create SQLite store instance
