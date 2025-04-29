@@ -25,10 +25,12 @@ oauth-client/
 ## Features
 
 - OAuth 2.0 Authorization Code Grant Flow
+- State parameter verification in callback using session management
 - Token refresh functionality
 - SQLite database for storing refresh tokens
 - Admin dashboard for token management
 - Automatic token refresh cron job
+- Automatic session clean up cron job
 - Real-time token expiration display
 
 ## Setup
@@ -62,8 +64,9 @@ oauth-client/
 
 ## Database
 
-The SQLite database (`oauth.db`) is automatically created in the root directory when the server starts. It contains a single table:
+The SQLite database (`oauth.db`) is automatically created in the root directory when the server starts. It contains two tables:
 
+1. Refresh Tokens
 ```sql
 CREATE TABLE refresh_tokens (
     sub TEXT PRIMARY KEY,
@@ -71,7 +74,8 @@ CREATE TABLE refresh_tokens (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 )
-```
+
+2. Another table for session management in express.js. This table stores the state parameter value against the session id to verify it at callback time. 
 
 ## API Endpoints
 
@@ -98,3 +102,4 @@ CREATE TABLE refresh_tokens (
 - Token refresh requires the user's `sub` identifier
 - Admin dashboard provides token management capabilities 
 - SSL certificates are required to support https
+- Session management is used to verify state parameter in callback
