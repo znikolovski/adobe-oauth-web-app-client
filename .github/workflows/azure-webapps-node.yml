@@ -44,7 +44,7 @@ jobs:
         AUTHORIZATION_URL=https://ims-na1.adobelogin.com/ims/authorize/v2
         TOKEN_URL=https://ims-na1.adobelogin.com/ims/token/v3
         REDIRECT_URI=https://oath-exp-validator.azurewebsites.net/callback
-        SCOPE=openid,AdobeID,lr_partner_apis,lr_partner_rendition_apis,offline_access
+        SCOPE=ee.express_api, AdobeID, openid
         cat .env
 
     - name: Run a script
