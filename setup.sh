@@ -19,7 +19,7 @@ else
     echo "SSL certificates already exist, skipping generation."
 fi
 
-echo "Copying .env.example to .env"
-cp .env.example .env
+#echo "Copying .env.example to .env"
+#cp .env.example .env
 
 echo "Setup completed successfully!" 
