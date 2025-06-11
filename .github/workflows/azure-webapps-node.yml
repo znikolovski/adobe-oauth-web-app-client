@@ -36,6 +36,17 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: 'Create env file'
+      run: |
+        touch .env
+        echo CLIENT_ID=${{ secrets.CLIENT_ID }}
+        echo CLIENT_SECRET=${{ secrets.CLIENT_SECRET   }}
+        AUTHORIZATION_URL=https://ims-na1.adobelogin.com/ims/authorize/v2
+        TOKEN_URL=https://ims-na1.adobelogin.com/ims/token/v3
+        REDIRECT_URI=https://oath-exp-validator.azurewebsites.net/callback
+        SCOPE=openid,AdobeID,lr_partner_apis,lr_partner_rendition_apis,offline_access
+        cat .env
+
     - name: Run a script
       run: chmod +x setup.sh
     
