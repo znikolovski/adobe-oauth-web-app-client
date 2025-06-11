@@ -230,11 +230,7 @@ const httpsServer = https.createServer(options, app);
 
 // Start both servers
 const HTTP_PORT = 80;
-const HTTPS_PORT = 443;
-
-httpServer.listen(HTTP_PORT, () => {
-    console.log(`HTTP Server running on http://localhost:${HTTP_PORT}`);
-});
+const HTTPS_PORT = 8080;
 
 httpsServer.listen(HTTPS_PORT, () => {
     console.log(`HTTPS Server running on https://localhost:${HTTPS_PORT}`);
