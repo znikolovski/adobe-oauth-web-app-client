@@ -193,6 +193,7 @@ app.post('/api/refresh', async (req, res) => {
 
 // Admin dashboard route
 app.get('/admin', (req, res) => {
+    console.log('Accessing admin');
     res.sendFile(path.join(__dirname, './public/admin.html'));
 });
 
